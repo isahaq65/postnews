@@ -5,13 +5,20 @@ App = {
   initWeb3: async function () {
     if (window.ethereum) {
       App.web3Provider = window.ethereum;
-      try {
-        //Request account access
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          });
+          setAccounts(accounts);
+        } catch (error) {
+          if (error.code === 4001) {
+            // User rejected request
+            console.log("badhan magi");
+          }
 
-        await window.ethereum.enable();
-      } catch (error) {
-        //User denied account access...
-        console.error("User denied account access");
+          // setError(error);
+        }
       }
     } else if (window.web3) {
       App.web3Provider = window.web3.currentProvider;
@@ -20,11 +27,12 @@ App = {
     // If no injected web3 instance is detected, fall back to Ganache
     else {
       App.web3Provider = new Web3.providers.HttpProvider(
-        "http://localhost:7545"
+        "http://localhost:8102"
       );
     }
 
     web3 = new Web3(App.web3Provider);
+    web3.eth.defaultAccount = web3.eth.accounts[0];
 
     return App.initContract();
   },
@@ -45,9 +53,11 @@ App = {
     // return App.bindEvents();
     return App.AddNewsButton();
   },
+
   init: async function () {
     // Load Products.
     var postInstance;
+    web3.eth.defaultAccount = web3.eth.accounts[0];
 
     App.contracts.news
       .deployed()
@@ -76,15 +86,19 @@ App = {
   },
 
   AddNewsButton: function () {
+    console.log("click button");
     $(document).on("click", ".addNews", App.AddNews);
   },
 
   AddNews: function (event) {
     var post = document.getElementById("post").value;
     var postInstance;
+    web3.eth.defaultAccount = web3.eth.accounts[0];
     App.contracts.news.deployed().then(function (instance) {
       postInstance = instance;
+      console.log("shakil madarchod");
       return postInstance.addnews(post);
+      console.log("2 madarchod");
     });
     console.log("News posted");
   },
